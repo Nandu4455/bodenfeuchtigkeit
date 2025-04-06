@@ -31,7 +31,7 @@ app.get('/', async (req, res) => {
     }
 
     const lastMoisture = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round(((1023 - lastMoisture) / 1023 * 100) * 100) / 100; // Invertierte Berechnung
+    const moisturePercent = Math.round(((1000 - lastMoisture) / 1000 * 100) * 100) / 100; // Invertierte Berechnung für 0–1000
     const color = moisturePercent < 40 ? '#F44336' : moisturePercent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
 
     const html = `
@@ -130,7 +130,7 @@ app.get('/', async (req, res) => {
               .then(response => response.text())
               .then(data => {
                 let sensorValue = parseFloat(data); // Rohwert vom Sensor
-                let percent = ((1023 - sensorValue) / 1023 * 100).toFixed(2); // Invertierte Berechnung
+                let percent = ((1000 - sensorValue) / 1000 * 100).toFixed(2); // Invertierte Berechnung für 0–1000
                 let color = percent < 40 ? '#F44336' : percent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
                 document.querySelector('.progress-bar').style.width = percent + '%';
                 document.querySelector('.progress-bar').style.background = color;

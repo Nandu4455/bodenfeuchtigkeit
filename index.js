@@ -31,8 +31,8 @@ app.get('/', async (req, res) => {
     }
 
     const lastMoisture = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round(((1000 - lastMoisture) / 1000 * 100) * 100) / 100; // Invertierte Berechnung für 0–1000
-    const color = moisturePercent < 40 ? '#F44336' : moisturePercent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
+    const moisturePercent = Math.round((100 - (lastMoisture / 1023 * 100)) * 100) / 100;
+    const color = lastMoisture < 400 ? '#4CAF50' : lastMoisture < 700 ? '#FFC107' : '#F44336';
 
     const html = `
       <!DOCTYPE html>
@@ -114,7 +114,7 @@ app.get('/', async (req, res) => {
       <body>
         <div class="container">
           <h1>🌱 Bodenfeuchtigkeit</h1>
-          <div class="value" id="moistureValue">${moisturePercent}</div>
+          <div class="value" id="moistureValue">${lastMoisture}</div>
           <div class="progress-container">
             <div class="progress-bar"></div>
           </div>
@@ -129,13 +129,12 @@ app.get('/', async (req, res) => {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
               .then(data => {
-                let sensorValue = parseFloat(data); // Rohwert vom Sensor
-                let percent = ((1000 - sensorValue) / 1000 * 100).toFixed(2); // Invertierte Berechnung für 0–1000
-                let color = percent < 40 ? '#F44336' : percent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
+                let percent = 100 - (data / 1023 * 100);
                 document.querySelector('.progress-bar').style.width = percent + '%';
+                let color = data < 400 ? '#4CAF50' : data < 700 ? '#FFC107' : '#F44336';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = percent;
+                document.getElementById('moistureValue').innerText = data;
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
           }, 15000); // Aktualisierung alle 15 Sekunden

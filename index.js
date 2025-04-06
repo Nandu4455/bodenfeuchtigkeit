@@ -31,8 +31,8 @@ app.get('/', async (req, res) => {
     }
 
     const lastMoisture = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round((100 - (lastMoisture / 1023 * 100)) * 100) / 100;
-    const color = lastMoisture < 400 ? '#4CAF50' : lastMoisture < 700 ? '#FFC107' : '#F44336';
+    const moisturePercent = Math.round((lastMoisture / 1000 * 100)); // Skalierung auf 0-1000
+    const color = lastMoisture < 300 ? '#F44336' : lastMoisture < 700 ? '#FFC107' : '#4CAF50';
 
     const html = `
       <!DOCTYPE html>
@@ -119,8 +119,8 @@ app.get('/', async (req, res) => {
             <div class="progress-bar"></div>
           </div>
           <div class="labels">
-            <span>Trocken</span>
             <span>Nass</span>
+            <span>Trocken</span>
           </div>
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
@@ -129,12 +129,13 @@ app.get('/', async (req, res) => {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
               .then(data => {
-                let percent = 100 - (data / 1023 * 100);
+                let moisture = parseFloat(data);
+                let percent = (moisture / 1000 * 100);
                 document.querySelector('.progress-bar').style.width = percent + '%';
-                let color = data < 400 ? '#4CAF50' : data < 700 ? '#FFC107' : '#F44336';
+                let color = moisture < 300 ? '#F44336' : moisture < 700 ? '#FFC107' : '#4CAF50';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = data;
+                document.getElementById('moistureValue').innerText = moisture;
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
           }, 15000); // Aktualisierung alle 15 Sekunden

@@ -30,9 +30,9 @@ app.get('/', async (req, res) => {
       throw new Error("Keine Daten von ThingSpeak empfangen.");
     }
 
-    const lastMoisture = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round((lastMoisture / 1000 * 100)); // Skalierung auf 0-1000
-    const color = lastMoisture < 300 ? '#F44336' : lastMoisture < 700 ? '#FFC107' : '#4CAF50';
+    const rawValue = parseFloat(data.feeds[0].field1);
+    const moisturePercent = Math.round(100 - (rawValue / 1023 * 100)); // Umwandlung in % (100% = nass, 0% = trocken)
+    const color = moisturePercent > 70 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
     const html = `
       <!DOCTYPE html>
@@ -114,13 +114,13 @@ app.get('/', async (req, res) => {
       <body>
         <div class="container">
           <h1>🌱 Bodenfeuchtigkeit</h1>
-          <div class="value" id="moistureValue">${lastMoisture}</div>
+          <div class="value" id="moistureValue">${moisturePercent}%</div>
           <div class="progress-container">
             <div class="progress-bar"></div>
           </div>
           <div class="labels">
-            <span>Nass</span>
-            <span>Trocken</span>
+            <span>Trocken (0%)</span>
+            <span>Nass (100%)</span>
           </div>
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
@@ -129,13 +129,13 @@ app.get('/', async (req, res) => {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
               .then(data => {
-                let moisture = parseFloat(data);
-                let percent = (moisture / 1000 * 100);
+                const rawValue = parseFloat(data);
+                const percent = Math.round(100 - (rawValue / 1023 * 100));
                 document.querySelector('.progress-bar').style.width = percent + '%';
-                let color = moisture < 300 ? '#F44336' : moisture < 700 ? '#FFC107' : '#4CAF50';
+                const color = percent > 70 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = moisture;
+                document.getElementById('moistureValue').innerText = percent + '%';
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
           }, 15000); // Aktualisierung alle 15 Sekunden

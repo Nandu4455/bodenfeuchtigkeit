@@ -31,7 +31,7 @@ app.get('/', async (req, res) => {
     }
 
     const lastMoisture = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round((lastMoisture / 1023 * 100) * 100) / 100; // Neue Berechnung
+    const moisturePercent = Math.round(((1023 - lastMoisture) / 1023 * 100) * 100) / 100; // Invertierte Berechnung
     const color = moisturePercent < 40 ? '#F44336' : moisturePercent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
 
     const html = `
@@ -129,12 +129,13 @@ app.get('/', async (req, res) => {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
               .then(data => {
-                let percent = data / 1023 * 100; // Neue Berechnung
+                let sensorValue = parseFloat(data); // Rohwert vom Sensor
+                let percent = ((1023 - sensorValue) / 1023 * 100).toFixed(2); // Invertierte Berechnung
                 let color = percent < 40 ? '#F44336' : percent < 70 ? '#FFC107' : '#4CAF50'; // Neue Farben
                 document.querySelector('.progress-bar').style.width = percent + '%';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = Math.round(percent * 100) / 100;
+                document.getElementById('moistureValue').innerText = percent;
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
           }, 15000); // Aktualisierung alle 15 Sekunden

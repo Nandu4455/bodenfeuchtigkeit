@@ -47,10 +47,7 @@ app.get('/', async (req, res) => {
             background: #f5f5f5;
             margin: 0;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            display: block; /* Änderung: Flexbox entfernt */
           }
           .container {
             background: white;
@@ -59,6 +56,7 @@ app.get('/', async (req, res) => {
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             width: 100%;
+            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
           }
           h1 {
             color: #2c3e50;
@@ -109,9 +107,21 @@ app.get('/', async (req, res) => {
               font-size: 3rem;
             }
           }
+          /* Stil für den iframe */
+          .iframe-container {
+            width: 100%;
+            height: 500px; /* Festgelegte Höhe */
+            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
+          }
+          .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+          }
         </style>
       </head>
       <body>
+        <!-- Bodenfeuchtigkeitsanzeige -->
         <div class="container">
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue">${moisturePercent}%</div>
@@ -124,9 +134,12 @@ app.get('/', async (req, res) => {
           </div>
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
-        <div style="width: 100%; height: 100%;">
-    <iframe style="width: 100%; height: 100%; border: none;" src="https://thingspeak.com/apps/matlab_visualizations/614924"></iframe>
-    </div>
+
+        <!-- Iframe für MATLAB-Visualisierung -->
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.com/apps/matlab_visualizations/614924"></iframe>
+        </div>
+
         <script>
           setInterval(function () {
             fetch('/moisture?nocache=' + Date.now())

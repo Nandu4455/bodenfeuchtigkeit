@@ -47,7 +47,7 @@ app.get('/', async (req, res) => {
             background: #f5f5f5;
             margin: 0;
             padding: 20px;
-            display: block; /* Änderung: Flexbox entfernt */
+            display: block; /* Flexbox entfernt */
           }
           .container {
             background: white;
@@ -109,7 +109,8 @@ app.get('/', async (req, res) => {
           }
           /* Stil für den iframe */
           .iframe-container {
-            width: 100%;
+            width: 100%; /* Volle Breite */
+            max-width: 800px; /* Maximale Breite für bessere Lesbarkeit */
             height: 500px; /* Festgelegte Höhe */
             margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
           }

@@ -19,7 +19,7 @@ const THINGSPEAK_CHANNEL_ID = '2907360';
 const THINGSPEAK_API_KEY = '87GFHEI5QZ0CIGII';
 const THINGSPEAK_PUBLIC_URL = `https://thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}`;
 
-// Hauptseite mit Chart.js-Diagramm
+// Hauptseite (mit korrigiertem IFrame-Design)
 app.get('/', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -66,16 +66,28 @@ app.get('/', async (req, res) => {
             color: ${color};
             margin: 20px 0;
           }
-          .chart-container {
+          /* IFrame-Container mit größerer Größe */
+          .iframe-container {
             width: 100%;
             max-width: 800px;
             height: 600px;
             margin: 0 auto 30px;
-            border-radius: 10px;
+            border-radius: 20px;
+            overflow: hidden;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+          }
+          .iframe-container:hover {
+            transform: scale(1.02);
+          }
+          .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 20px;
           }
           @media (max-width: 768px) {
-            .chart-container {
+            .iframe-container {
               height: 400px;
             }
           }
@@ -96,73 +108,27 @@ app.get('/', async (req, res) => {
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
 
-        <!-- Neues Diagramm mit Chart.js -->
-        <div class="chart-container">
-          <canvas id="moistureChart" width="800" height="600"></canvas>
+        <!-- Original-IFrame mit größerer Größe -->
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-          // Fortlaufendes Diagramm aktualisieren
-          const ctx = document.getElementById('moistureChart').getContext('2d');
-          const moistureChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: [],
-              datasets: [{
-                label: 'Bodenfeuchtigkeit (%)',
-                data: [],
-                borderColor: '#2196F3',
-                fill: false
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                  title: { display: true, text: 'Feuchtigkeit (%)' }
-                },
-                x: {
-                  title: { display: true, text: 'Zeit' }
-                }
-              }
-            }
-          });
-
-          // Daten alle 15 Sekunden holen
-          async function updateData() {
-            try {
-              const response = await fetch('/moisture');
-              const rawValue = await response.text();
-              const percent = Math.round(100 - (rawValue / 1023 * 100));
-
-              // Daten für Diagramm und Progress-Bar aktualisieren
-              moistureChart.data.datasets[0].data.push(percent);
-              moistureChart.data.labels.push(new Date().toLocaleTimeString());
-              moistureChart.update();
-
-              // Alte Daten löschen, wenn zu viele sind
-              if (moistureChart.data.datasets[0].data.length > 20) {
-                moistureChart.data.datasets[0].data.shift();
-                moistureChart.data.labels.shift();
-              }
-
-              // Progress-Bar aktualisieren
-              const progressBar = document.querySelector('.progress-bar');
-              progressBar.style.width = percent + '%';
-              progressBar.style.background = percent > 70 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
-              document.getElementById('moistureValue').innerText = percent + '%';
-            } catch (error) {
-              console.error("Fehler:", error);
-            }
-          }
-
-          // Starten und intervallbasiert aktualisieren
-          updateData();
-          setInterval(updateData, 15000);
+          // Daten alle 15 Sekunden aktualisieren
+          setInterval(function () {
+            fetch('/moisture?nocache=' + Date.now())
+              .then(response => response.text())
+              .then(data => {
+                const rawValue = parseFloat(data);
+                const percent = Math.round(100 - (rawValue / 1023 * 100));
+                document.querySelector('.progress-bar').style.width = percent + '%';
+                const color = percent > 70 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
+                document.querySelector('.progress-bar').style.background = color;
+                document.getElementById('moistureValue').style.color = color;
+                document.getElementById('moistureValue').innerText = percent + '%';
+              })
+              .catch(error => console.error("Fehler:", error));
+          }, 15000);
         </script>
       </body>
       </html>

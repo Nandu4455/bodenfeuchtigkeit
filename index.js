@@ -125,9 +125,11 @@ app.get('/', async (req, res) => {
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
             transition: transform 0.3s ease-in-out; /* Hover-Effekt */
           }
+          
           .iframe-container:hover {
             transform: scale(1.02); /* Leichter Zoom beim Hover */
           }
+          
           .iframe-container iframe {
             width: 100%;
             height: 100%;
@@ -151,11 +153,14 @@ app.get('/', async (req, res) => {
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
 
-        <!-- Iframe für MATLAB-Visualisierung -->
-        <div class="iframe-container">
-          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
-          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
-        </div>
+       <!-- Iframe für MATLAB-Visualisierung -->
+          <div class="iframe-container">
+            <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
+          </div>
+          
+          <div class="iframe-container">
+            <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
+          </div>
 
         <script>
           setInterval(function () {

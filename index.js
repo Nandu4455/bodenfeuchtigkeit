@@ -154,6 +154,7 @@ app.get('/', async (req, res) => {
         <!-- Iframe für MATLAB-Visualisierung -->
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
         </div>
 
         <script>

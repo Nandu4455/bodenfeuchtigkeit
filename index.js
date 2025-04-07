@@ -44,7 +44,7 @@ app.get('/', async (req, res) => {
           body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: linear-gradient(to bottom, #e0f7fa, #b2ebf2); /* Hintergrundgradient */
+            background: #e0f7fa; /* Einheitliche Hintergrundfarbe */
             margin: 0;
             padding: 20px;
             display: block; /* Flexbox entfernt */

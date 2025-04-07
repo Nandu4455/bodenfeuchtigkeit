@@ -167,7 +167,11 @@ app.get('/', async (req, res) => {
                 const color = percent > 70 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = percent + '%';
+                let emoji = '🌵'; // trocken
+                if (percent > 70) emoji = '💧';
+                else if (percent > 30) emoji = '🌿';
+                document.getElementById('moistureValue').innerText = emoji + ' ' + percent + '%';
+
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
           }, 15000); // Aktualisierung alle 15 Sekunden

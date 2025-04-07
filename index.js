@@ -1,7 +1,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 
-// Punycode-Warnung beheben
+// Punycode-Deprecation-Warnung beheben
 globalThis.punycode = require('punycode');
 
 const app = express();
@@ -19,7 +19,7 @@ const THINGSPEAK_CHANNEL_ID = '2907360';
 const THINGSPEAK_API_KEY = '87GFHEI5QZ0CIGII';
 const THINGSPEAK_PUBLIC_URL = `https://thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}`;
 
-// Hauptseite (mit korrigiertem IFrame-Design)
+// Hauptseite
 app.get('/', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -31,7 +31,7 @@ app.get('/', async (req, res) => {
     }
 
     const rawValue = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round(100 - (rawValue / 1023 * 100));
+    const moisturePercent = Math.round(100 - (rawValue / 1023 * 100)); // Umwandlung in % (100% = nass, 0% = trocken)
     const color = moisturePercent > 70 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
     const html = `
@@ -44,52 +44,95 @@ app.get('/', async (req, res) => {
           body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #e0f7fa;
+            background: #e0f7fa; /* Einheitliche Hintergrundfarbe */
             margin: 0;
             padding: 20px;
+            display: block; /* Flexbox entfernt */
           }
           .container {
             background: white;
-            border-radius: 20px;
+            border-radius: 20px; /* Abgerundete Ecken für den Container */
             padding: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
             max-width: 500px;
             width: 100%;
-            margin: 0 auto 30px;
-            transition: transform 0.3s;
+            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
+            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
           }
           .container:hover {
-            transform: scale(1.02);
+            transform: scale(1.02); /* Leichter Zoom beim Hover */
+          }
+          h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 20px;
           }
           .value {
             font-size: 4rem;
-            color: ${color};
+            font-weight: bold;
             margin: 20px 0;
+            color: ${color};
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Textschatten für Tiefe */
           }
-          /* IFrame-Container mit größerer Größe */
-          .iframe-container {
-            width: 100%;
-            max-width: 800px;
-            height: 600px;
-            margin: 0 auto 30px;
-            border-radius: 20px;
+          .progress-container {
+            background: #e0e0e0;
+            border-radius: 15px;
+            height: 30px;
+            margin: 20px 0;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Innerer Schatten */
+          }
+          .progress-bar {
+            height: 100%;
+            width: ${moisturePercent}%;
+            background: ${color};
+            transition: width 0.5s, background 0.5s; /* Flüssige Übergänge */
+            border-radius: 15px;
+          }
+          .labels {
+            display: flex;
+            justify-content: space-between;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+          }
+          .thingspeak-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px; /* Runde Buttons */
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.3s; /* Hover-Effekt */
+          }
+          .thingspeak-link:hover {
+            background-color: #1976D2;
+            transform: scale(1.1); /* Vergrößerung beim Hover */
+          }
+          @media (max-width: 600px) {
+            .value {
+              font-size: 3rem;
+            }
+          }
+          /* Stil für den iframe */
+          .iframe-container {
+            width: 100%; /* Volle Breite */
+            max-width: 500px; /* Gleiche maximale Breite wie .container */
+            height: 300px; /* Festgelegte Höhe für das Diagramm */
+            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
+            border-radius: 20px; /* Abgerundete Ecken */
+            overflow: hidden; /* Keine Überlappungen */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
+            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
           }
           .iframe-container:hover {
-            transform: scale(1.02);
+            transform: scale(1.02); /* Leichter Zoom beim Hover */
           }
           .iframe-container iframe {
             width: 100%;
             height: 100%;
             border: none;
-            border-radius: 20px;
-          }
-          @media (max-width: 768px) {
-            .iframe-container {
-              height: 400px;
-            }
+            border-radius: 20px; /* Abgerundete Ecken für das Diagramm */
           }
         </style>
       </head>
@@ -99,7 +142,7 @@ app.get('/', async (req, res) => {
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue">${moisturePercent}%</div>
           <div class="progress-container">
-            <div class="progress-bar" style="width: ${moisturePercent}%; background: ${color}"></div>
+            <div class="progress-bar"></div>
           </div>
           <div class="labels">
             <span>Trocken (0%)</span>
@@ -108,13 +151,12 @@ app.get('/', async (req, res) => {
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
 
-        <!-- Original-IFrame mit größerer Größe -->
+        <!-- Iframe für MATLAB-Visualisierung -->
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
         </div>
 
         <script>
-          // Daten alle 15 Sekunden aktualisieren
           setInterval(function () {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
@@ -127,20 +169,20 @@ app.get('/', async (req, res) => {
                 document.getElementById('moistureValue').style.color = color;
                 document.getElementById('moistureValue').innerText = percent + '%';
               })
-              .catch(error => console.error("Fehler:", error));
-          }, 15000);
+              .catch(error => console.error("Fehler beim Aktualisieren:", error));
+          }, 15000); // Aktualisierung alle 15 Sekunden
         </script>
       </body>
       </html>
     `;
     res.send(html);
   } catch (error) {
-    console.error("Fehler:", error);
+    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
-// Endpoint für Feuchtigkeitswerte
+// Endpoint für aktuelle Feuchtigkeitswerte
 app.get('/moisture', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -152,15 +194,15 @@ app.get('/moisture', async (req, res) => {
     }
 
     const lastMoisture = data.feeds[0].field1;
-    res.set('Cache-Control', 'no-store');
+    res.set('Cache-Control', 'no-store'); // Kein Caching erlauben
     res.send(lastMoisture.toString());
   } catch (error) {
-    console.error("Fehler:", error);
+    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
 // Server starten
 app.listen(PORT, () => {
-  console.log(`Server läuft auf http://localhost:${PORT}`);
+  console.log(`Server läuft auf Port ${PORT}`);
 });

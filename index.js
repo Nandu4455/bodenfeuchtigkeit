@@ -44,19 +44,23 @@ app.get('/', async (req, res) => {
           body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #f5f5f5;
+            background: linear-gradient(to bottom, #e0f7fa, #b2ebf2); /* Hintergrundgradient */
             margin: 0;
             padding: 20px;
             display: block; /* Flexbox entfernt */
           }
           .container {
             background: white;
-            border-radius: 15px;
+            border-radius: 20px; /* Abgerundete Ecken für den Container */
             padding: 30px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
             max-width: 500px;
             width: 100%;
             margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
+            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
+          }
+          .container:hover {
+            transform: scale(1.02); /* Leichter Zoom beim Hover */
           }
           h1 {
             color: #2c3e50;
@@ -68,6 +72,7 @@ app.get('/', async (req, res) => {
             font-weight: bold;
             margin: 20px 0;
             color: ${color};
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Textschatten für Tiefe */
           }
           .progress-container {
             background: #e0e0e0;
@@ -75,12 +80,13 @@ app.get('/', async (req, res) => {
             height: 30px;
             margin: 20px 0;
             overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Innerer Schatten */
           }
           .progress-bar {
             height: 100%;
             width: ${moisturePercent}%;
             background: ${color};
-            transition: width 0.5s;
+            transition: width 0.5s, background 0.5s; /* Flüssige Übergänge */
             border-radius: 15px;
           }
           .labels {
@@ -95,12 +101,13 @@ app.get('/', async (req, res) => {
             background-color: #2196F3;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 25px; /* Runde Buttons */
             font-size: 1rem;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s; /* Hover-Effekt */
           }
           .thingspeak-link:hover {
             background-color: #1976D2;
+            transform: scale(1.1); /* Vergrößerung beim Hover */
           }
           @media (max-width: 600px) {
             .value {
@@ -113,11 +120,19 @@ app.get('/', async (req, res) => {
             max-width: 500px; /* Gleiche maximale Breite wie .container */
             height: 300px; /* Festgelegte Höhe für das Diagramm */
             margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
+            border-radius: 20px; /* Abgerundete Ecken */
+            overflow: hidden; /* Keine Überlappungen */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
+            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
+          }
+          .iframe-container:hover {
+            transform: scale(1.02); /* Leichter Zoom beim Hover */
           }
           .iframe-container iframe {
             width: 100%;
             height: 100%;
             border: none;
+            border-radius: 20px; /* Abgerundete Ecken für das Diagramm */
           }
         </style>
       </head>

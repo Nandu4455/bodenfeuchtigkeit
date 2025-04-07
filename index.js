@@ -124,6 +124,9 @@ app.get('/', async (req, res) => {
           </div>
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
+        <div style="width: 100%; height: 100%;">
+    <iframe style="width: 100%; height: 100%; border: none;" src="https://thingspeak.com/apps/matlab_visualizations/614924"></iframe>
+    </div>
         <script>
           setInterval(function () {
             fetch('/moisture?nocache=' + Date.now())

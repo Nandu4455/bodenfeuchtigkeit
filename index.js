@@ -110,8 +110,8 @@ app.get('/', async (req, res) => {
           /* Stil für den iframe */
           .iframe-container {
             width: 100%; /* Volle Breite */
-            max-width: 800px; /* Maximale Breite für bessere Lesbarkeit */
-            height: 500px; /* Festgelegte Höhe */
+            max-width: 500px; /* Gleiche maximale Breite wie .container */
+            height: 300px; /* Festgelegte Höhe für das Diagramm */
             margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
           }
           .iframe-container iframe {

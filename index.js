@@ -31,8 +31,9 @@ app.get('/', async (req, res) => {
     }
 
     const rawValue = parseFloat(data.feeds[0].field1);
-    const moisturePercent = Math.round(100 - (rawValue / 1023 * 100)); // Umwandlung in % (100% = nass, 0% = trocken)
-    const color = moisturePercent > 70 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
+    const moisturePercent = Math.round(100 - (rawValue / 1023 * 100));
+    // Änderung 1: Grenzwert von 70 auf 50 setzen
+    const color = moisturePercent > 50 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
     const html = `
       <!DOCTYPE html>
@@ -44,23 +45,23 @@ app.get('/', async (req, res) => {
           body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #e0f7fa; /* Einheitliche Hintergrundfarbe */
+            background: #e0f7fa;
             margin: 0;
             padding: 20px;
-            display: block; /* Flexbox entfernt */
+            display: block;
           }
           .container {
             background: white;
-            border-radius: 20px; /* Abgerundete Ecken für den Container */
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             width: 100%;
-            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
-            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
+            margin: 0 auto 20px;
+            transition: transform 0.3s ease-in-out;
           }
           .container:hover {
-            transform: scale(1.02); /* Leichter Zoom beim Hover */
+            transform: scale(1.02);
           }
           h1 {
             color: #2c3e50;
@@ -72,7 +73,7 @@ app.get('/', async (req, res) => {
             font-weight: bold;
             margin: 20px 0;
             color: ${color};
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Textschatten für Tiefe */
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
           }
           .progress-container {
             background: #e0e0e0;
@@ -80,13 +81,13 @@ app.get('/', async (req, res) => {
             height: 30px;
             margin: 20px 0;
             overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); /* Innerer Schatten */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
           }
           .progress-bar {
             height: 100%;
             width: ${moisturePercent}%;
             background: ${color};
-            transition: width 0.5s, background 0.5s; /* Flüssige Übergänge */
+            transition: width 0.5s, background 0.5s;
             border-radius: 15px;
           }
           .labels {
@@ -101,45 +102,41 @@ app.get('/', async (req, res) => {
             background-color: #2196F3;
             color: white;
             text-decoration: none;
-            border-radius: 25px; /* Runde Buttons */
+            border-radius: 25px;
             font-size: 1rem;
-            transition: background-color 0.3s, transform 0.3s; /* Hover-Effekt */
+            transition: background-color 0.3s, transform 0.3s;
           }
           .thingspeak-link:hover {
             background-color: #1976D2;
-            transform: scale(1.1); /* Vergrößerung beim Hover */
+            transform: scale(1.1);
           }
           @media (max-width: 600px) {
             .value {
               font-size: 3rem;
             }
           }
-          /* Stil für den iframe */
           .iframe-container {
-            width: 100%; /* Volle Breite */
-            max-width: 500px; /* Gleiche maximale Breite wie .container */
-            height: 300px; /* Festgelegte Höhe für das Diagramm */
-            margin: 0 auto 20px; /* Zentrierung und Abstand nach unten */
-            border-radius: 20px; /* Abgerundete Ecken */
-            overflow: hidden; /* Keine Überlappungen */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Weicher Schatten */
-            transition: transform 0.3s ease-in-out; /* Hover-Effekt */
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 0 auto 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
           }
-          
           .iframe-container:hover {
-            transform: scale(1.02); /* Leichter Zoom beim Hover */
+            transform: scale(1.02);
           }
-          
           .iframe-container iframe {
             width: 100%;
             height: 100%;
             border: none;
-            border-radius: 20px; /* Abgerundete Ecken für das Diagramm */
+            border-radius: 20px;
           }
         </style>
       </head>
       <body>
-        <!-- Bodenfeuchtigkeitsanzeige -->
         <div class="container">
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue">${moisturePercent}%</div>
@@ -153,14 +150,13 @@ app.get('/', async (req, res) => {
           <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link">DATEN 📊</a>
         </div>
 
-       <!-- Iframe für MATLAB-Visualisierung -->
-          <div class="iframe-container">
-            <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
-          </div>
-          
-          <div class="iframe-container">
-            <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
-          </div>
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
+        </div>
+        
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
+        </div>
 
         <script>
           setInterval(function () {
@@ -170,14 +166,14 @@ app.get('/', async (req, res) => {
                 const rawValue = parseFloat(data);
                 const percent = Math.round(100 - (rawValue / 1023 * 100));
                 document.querySelector('.progress-bar').style.width = percent + '%';
+                // Änderung 2: Konsistente Farblogik mit Server
                 const color = percent > 50 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
                 document.querySelector('.progress-bar').style.background = color;
                 document.getElementById('moistureValue').style.color = color;
                 document.getElementById('moistureValue').innerText = percent + '%';
-
               })
               .catch(error => console.error("Fehler beim Aktualisieren:", error));
-          }, 15000); // Aktualisierung alle 15 Sekunden
+          }, 15000);
         </script>
       </body>
       </html>
@@ -201,7 +197,7 @@ app.get('/moisture', async (req, res) => {
     }
 
     const lastMoisture = data.feeds[0].field1;
-    res.set('Cache-Control', 'no-store'); // Kein Caching erlauben
+    res.set('Cache-Control', 'no-store');
     res.send(lastMoisture.toString());
   } catch (error) {
     console.error("Fehler beim Abrufen von ThingSpeak:", error.message);

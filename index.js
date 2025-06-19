@@ -156,6 +156,10 @@ app.get('/', async (req, res) => {
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
         </div>
+        
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865"></iframe>
+        </div>
 
         <script>
           setInterval(function () {

@@ -161,6 +161,10 @@ app.get('/', async (req, res) => {
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865"></iframe>
         </div>
 
+        <div class="iframe-container">
+          <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615591"></iframe>
+        </div>
+
         <script>
           setInterval(function () {
             fetch('/moisture?nocache=' + Date.now())

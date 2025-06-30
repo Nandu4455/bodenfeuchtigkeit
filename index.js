@@ -17,6 +17,10 @@ const THINGSPEAK_CHANNEL_ID = '2907360';
 const THINGSPEAK_API_KEY = '87GFHEI5QZ0CIGII';
 const THINGSPEAK_PUBLIC_URL = `https://thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}`;
 
+// Bereichsanpassung: 1023 (trocken), 460 (nass)
+const SENSOR_MAX = 1023;
+const SENSOR_MIN = 460;
+
 app.get('/', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -29,7 +33,7 @@ app.get('/', async (req, res) => {
 
     const rawMoisture = parseFloat(data.feeds[0].field1);
     const temperature = parseFloat(data.feeds[0].field2);
-    const moisturePercent = Math.round(100 - (rawMoisture / 1023 * 100));
+    const moisturePercent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - rawMoisture) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
     const moistureColor = moisturePercent > 50 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
     const html = `
@@ -166,12 +170,15 @@ app.get('/', async (req, res) => {
         </div>
 
         <script>
+          const SENSOR_MAX = 1023;
+          const SENSOR_MIN = 460;
+
           setInterval(function () {
             fetch('/moisture?nocache=' + Date.now())
               .then(response => response.text())
               .then(data => {
                 const raw = parseFloat(data);
-                const percent = Math.round(100 - (raw / 1023 * 100));
+                const percent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - raw) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
                 const color = percent > 50 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
                 document.querySelector('.progress-bar').style.width = percent + '%';
                 document.querySelector('.progress-bar').style.background = color;
@@ -200,7 +207,6 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Endpunkt für Bodenfeuchtigkeit
 app.get('/moisture', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -216,7 +222,6 @@ app.get('/moisture', async (req, res) => {
   }
 });
 
-// Endpunkt für Temperatur
 app.get('/temperature', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
@@ -232,7 +237,6 @@ app.get('/temperature', async (req, res) => {
   }
 });
 
-// Server starten
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });

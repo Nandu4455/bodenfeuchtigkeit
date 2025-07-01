@@ -64,7 +64,7 @@ app.get('/', async (req, res) => {
           box-shadow: 0 8px 16px rgba(0,0,0,0.15);
           width: 550px;
           max-width: 90vw;
-          height: 350px;
+          height: 400px;
           margin: 15px 0;
           display: flex;
           flex-direction: column;
@@ -279,6 +279,7 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 
 
 

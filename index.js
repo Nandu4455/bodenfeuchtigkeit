@@ -47,17 +47,27 @@ app.get('/', async (req, res) => {
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <title>Bodenfeuchtigkeit & Temperatur</title>
       <style>
+        /* Animierter Hintergrund */
+        @keyframes backgroundGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
         body {
           margin: 0;
           padding: 20px;
           font-family: Arial, sans-serif;
-          background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+          background: linear-gradient(270deg, #89f7fe, #66a6ff, #a18cd1, #fbc1cc);
+          background-size: 800% 800%;
+          animation: backgroundGradient 30s ease infinite;
           display: flex;
           flex-direction: column;
           align-items: center;
           min-height: 100vh;
           color: #2c3e50;
         }
+
+        /* Sanfte Einblendung + Slide-up */
         .container {
           background: #fff;
           border-radius: 20px;
@@ -72,11 +82,27 @@ app.get('/', async (req, res) => {
           align-items: center;
           text-align: center;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
+          opacity: 0;
+          transform: translateY(20px);
+          animation: fadeSlideIn 0.6s forwards;
+          animation-delay: var(--delay);
+          user-select: none;
         }
+        @keyframes fadeSlideIn {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Hover-Effekt mit Schatten & Skalierung */
         .container:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+          transform: scale(1.05);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          cursor: default;
         }
+
         h1 {
           margin-bottom: 15px;
           font-size: 2.5rem;
@@ -87,8 +113,8 @@ app.get('/', async (req, res) => {
           font-weight: 700;
           margin: 10px 0 20px;
           text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-          user-select: none;
         }
+
         .progress-container {
           width: 90%;
           height: 40px;
@@ -105,6 +131,7 @@ app.get('/', async (req, res) => {
           background-color: ${moistureColor};
           transition: width 0.5s ease, background-color 0.5s ease;
         }
+
         .labels {
           width: 90%;
           max-width: 100%;
@@ -113,8 +140,8 @@ app.get('/', async (req, res) => {
           font-weight: 600;
           color: #7f8c8d;
           margin-bottom: 15px;
-          user-select: none;
         }
+
         .thingspeak-link {
           background-color: #2196F3;
           color: white;
@@ -129,6 +156,7 @@ app.get('/', async (req, res) => {
           background-color: #1976D2;
           transform: scale(1.05);
         }
+
         @media (max-width: 600px) {
           .container {
             width: 90vw;
@@ -145,6 +173,7 @@ app.get('/', async (req, res) => {
             height: 30px;
           }
         }
+
         .iframe-container {
           width: 550px;
           max-width: 90vw;
@@ -167,7 +196,7 @@ app.get('/', async (req, res) => {
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="container" style="--delay: 0.1s;">
         <h1>🌱 Bodenfeuchtigkeit</h1>
         <div class="value" id="moistureValue" style="color: ${moistureColor}">${moisturePercent}%</div>
         <div class="progress-container">
@@ -180,22 +209,22 @@ app.get('/', async (req, res) => {
         <a href="${THINGSPEAK_PUBLIC_URL}" target="_blank" class="thingspeak-link" rel="noopener noreferrer">DATEN 📊</a>
       </div>
 
-      <div class="container">
+      <div class="container" style="--delay: 0.3s;">
         <h1>🌡️ Temperatur</h1>
         <div class="value" id="temperatureValue">${temperature.toFixed(1)} °C</div>
       </div>
 
       <div class="iframe-container">
-        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988" loading="lazy"></iframe>
+        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988" loading="eager" allow="autoplay"></iframe>
       </div>
       <div class="iframe-container">
-        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027" loading="lazy"></iframe>
+        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027" loading="eager" allow="autoplay"></iframe>
       </div>
       <div class="iframe-container">
-        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865" loading="lazy"></iframe>
+        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865" loading="eager" allow="autoplay"></iframe>
       </div>
       <div class="iframe-container">
-        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615591" loading="lazy"></iframe>
+        <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615591" loading="eager" allow="autoplay"></iframe>
       </div>
 
       <script>
@@ -279,6 +308,7 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 
 
 

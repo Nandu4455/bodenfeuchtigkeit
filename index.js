@@ -41,34 +41,40 @@ app.get('/', async (req, res) => {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Bodenfeuchtigkeit & Temperatur</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
         <style>
           body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #e0f7fa;
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            font-family: 'Poppins', Arial, sans-serif;
+            color: #2c3e50;
             margin: 0;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
           }
           .container {
-            background: white;
+            background: #fff;
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             max-width: 500px;
-            margin: 0 auto 20px;
-            transition: transform 0.3s ease-in-out;
+            margin: 20px auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
           }
           .container:hover {
-            transform: scale(1.02);
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.25);
           }
           h1 {
-            color: #2c3e50;
-            font-size: 2rem;
+            font-weight: 600;
+            font-size: 2.2rem;
             margin-bottom: 20px;
           }
           .value {
+            font-weight: 600;
             font-size: 4rem;
-            font-weight: bold;
             margin: 20px 0;
             text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
           }
@@ -82,26 +88,29 @@ app.get('/', async (req, res) => {
           }
           .progress-bar {
             height: 100%;
-            background: ${moistureColor};
-            width: ${moisturePercent}%;
             border-radius: 15px;
-            transition: width 0.5s, background 0.5s;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            transition: width 0.5s ease, background 0.5s ease;
+            width: ${moisturePercent}%;
+            background-color: ${moistureColor};
           }
           .labels {
             display: flex;
             justify-content: space-between;
             color: #7f8c8d;
             margin-bottom: 20px;
+            font-weight: 500;
           }
           .thingspeak-link {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 10px 25px;
             background-color: #2196F3;
             color: white;
             text-decoration: none;
             border-radius: 25px;
+            font-weight: 600;
             font-size: 1rem;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color 0.3s ease, transform 0.3s ease;
           }
           .thingspeak-link:hover {
             background-color: #1976D2;
@@ -110,6 +119,13 @@ app.get('/', async (req, res) => {
           @media (max-width: 600px) {
             .value {
               font-size: 3rem;
+            }
+            h1 {
+              font-size: 1.8rem;
+            }
+            .thingspeak-link {
+              padding: 8px 20px;
+              font-size: 0.9rem;
             }
           }
           .iframe-container {
@@ -172,9 +188,10 @@ app.get('/', async (req, res) => {
           const SENSOR_MAX = 1023;
           const SENSOR_MIN = 460;
 
-          // Initiale Werte setzen (bereits im HTML), aber auch progress-bar direkt setzen:
-          document.querySelector('.progress-bar').style.width = '${moisturePercent}%';
-          document.querySelector('.progress-bar').style.background = '${moistureColor}';
+          // Setze initiale Progress-Bar Breite & Farbe passend zum Wert
+          const progressBar = document.querySelector('.progress-bar');
+          progressBar.style.width = '${moisturePercent}%';
+          progressBar.style.backgroundColor = '${moistureColor}';
 
           setInterval(() => {
             fetch('/moisture?nocache=' + Date.now())
@@ -184,9 +201,8 @@ app.get('/', async (req, res) => {
                 const percent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - value) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
                 const color = percent > 50 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
 
-                const bar = document.querySelector('.progress-bar');
-                bar.style.width = percent + '%';
-                bar.style.background = color;
+                progressBar.style.width = percent + '%';
+                progressBar.style.backgroundColor = color;
 
                 const valElem = document.getElementById('moistureValue');
                 valElem.style.color = color;
@@ -249,5 +265,6 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 
 

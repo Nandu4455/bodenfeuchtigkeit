@@ -30,6 +30,7 @@ app.get('/', async (req, res) => {
 
     const rawMoisture = parseFloat(data.feeds[0].field1);
     const temperature = parseFloat(data.feeds[0].field2);
+
     const moisturePercent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - rawMoisture) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
     const moistureColor = moisturePercent > 50 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
@@ -148,7 +149,7 @@ app.get('/', async (req, res) => {
 
         <div class="container">
           <h1>🌡️ Temperatur</h1>
-          <div class="value" id="temperatureValue">-- °C</div>
+          <div class="value" id="temperatureValue">${temperature.toFixed(1)} °C</div>
         </div>
 
         <div class="iframe-container">
@@ -171,7 +172,7 @@ app.get('/', async (req, res) => {
           const SENSOR_MAX = 1023;
           const SENSOR_MIN = 460;
 
-          // Initial Progress-Bar setzen
+          // Initiale Werte setzen (bereits im HTML), aber auch progress-bar direkt setzen:
           document.querySelector('.progress-bar').style.width = '${moisturePercent}%';
           document.querySelector('.progress-bar').style.background = '${moistureColor}';
 
@@ -248,4 +249,5 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 

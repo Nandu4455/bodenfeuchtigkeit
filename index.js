@@ -1,66 +1,44 @@
-require('dotenv').config();
 const express = require('express');
-const fetch = require('node-fetch');
 
 const app = express();
 const PORT = 3000;
 
-// Sicherheits-Header
+// CORS aktivieren
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-// .env Variablen
-const THINGSPEAK_CHANNEL_ID = process.env.THINGSPEAK_CHANNEL_ID;
-const THINGSPEAK_API_KEY = process.env.THINGSPEAK_API_KEY;
+const THINGSPEAK_CHANNEL_ID = '2907360';
+const THINGSPEAK_API_KEY = '87GFHEI5QZ0CIGII';
 const THINGSPEAK_PUBLIC_URL = `https://thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}`;
 
 const SENSOR_MAX = 1023;
 const SENSOR_MIN = 460;
 
-// Daten-Caching
-let cachedData = null;
-let lastFetchTime = 0;
-
-async function getLatestData() {
-  const now = Date.now();
-  if (!cachedData || now - lastFetchTime > 10000) {
-    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (!data || !data.feeds || data.feeds.length === 0) {
-      throw new Error("Keine gültigen Daten empfangen.");
-    }
-    cachedData = data;
-    lastFetchTime = now;
-  }
-  return cachedData;
-}
-
-// Startseite
 app.get('/', async (req, res) => {
   try {
-    const data = await getLatestData();
-    const rawMoisture = parseFloat(data.feeds[0].field1);
-    const temperature = parseFloat(data.feeds[0].field2);
+    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Fehler bei ThingSpeak API');
 
-    if (isNaN(rawMoisture) || isNaN(temperature)) {
-      throw new Error("Ungültige Sensordaten.");
+    const data = await response.json();
+    if (!data || !data.feeds || data.feeds.length === 0) {
+      throw new Error("Keine Daten von ThingSpeak empfangen.");
     }
 
+    const rawMoisture = parseFloat(data.feeds[0].field1);
+    const temperature = parseFloat(data.feeds[0].field2);
     const moisturePercent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - rawMoisture) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
     const moistureColor = moisturePercent > 50 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html lang="de">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Bodenfeuchtigkeit & Temperatur</title>
         <style>
           body {
@@ -91,7 +69,7 @@ app.get('/', async (req, res) => {
             font-size: 4rem;
             font-weight: bold;
             margin: 20px 0;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
           }
           .progress-container {
             background: #e0e0e0;
@@ -99,7 +77,7 @@ app.get('/', async (req, res) => {
             height: 30px;
             margin: 20px 0;
             overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
           }
           .progress-bar {
             height: 100%;
@@ -140,7 +118,7 @@ app.get('/', async (req, res) => {
             margin: 0 auto 20px;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease-in-out;
           }
           .iframe-container:hover {
@@ -159,7 +137,7 @@ app.get('/', async (req, res) => {
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue" style="color:${moistureColor}">${moisturePercent}%</div>
           <div class="progress-container">
-            <div class="progress-bar" style="width:${moisturePercent}%; background:${moistureColor};"></div>
+            <div class="progress-bar"></div>
           </div>
           <div class="labels">
             <span>Trocken (0%)</span>
@@ -170,18 +148,21 @@ app.get('/', async (req, res) => {
 
         <div class="container">
           <h1>🌡️ Temperatur</h1>
-          <div class="value" id="temperatureValue">${temperature.toFixed(1)} °C</div>
+          <div class="value" id="temperatureValue">-- °C</div>
         </div>
 
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
         </div>
+        
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
         </div>
+        
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865"></iframe>
         </div>
+
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615591"></iframe>
         </div>
@@ -190,27 +171,35 @@ app.get('/', async (req, res) => {
           const SENSOR_MAX = 1023;
           const SENSOR_MIN = 460;
 
-          setInterval(function () {
+          // Initial Progress-Bar setzen
+          document.querySelector('.progress-bar').style.width = '${moisturePercent}%';
+          document.querySelector('.progress-bar').style.background = '${moistureColor}';
+
+          setInterval(() => {
             fetch('/moisture?nocache=' + Date.now())
-              .then(response => response.text())
-              .then(data => {
-                const raw = parseFloat(data);
-                const percent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - raw) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
+              .then(res => res.text())
+              .then(raw => {
+                const value = parseFloat(raw);
+                const percent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - value) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
                 const color = percent > 50 ? '#4CAF50' : percent > 30 ? '#FFC107' : '#F44336';
-                document.querySelector('.progress-bar').style.width = percent + '%';
-                document.querySelector('.progress-bar').style.background = color;
-                document.getElementById('moistureValue').style.color = color;
-                document.getElementById('moistureValue').innerText = percent + '%';
+
+                const bar = document.querySelector('.progress-bar');
+                bar.style.width = percent + '%';
+                bar.style.background = color;
+
+                const valElem = document.getElementById('moistureValue');
+                valElem.style.color = color;
+                valElem.innerText = percent + '%';
               })
-              .catch(error => console.error("Fehler beim Feuchtigkeit-Update:", error));
+              .catch(e => console.error("Feuchtigkeit-Update Fehler:", e));
 
             fetch('/temperature?nocache=' + Date.now())
-              .then(response => response.text())
+              .then(res => res.text())
               .then(temp => {
                 const t = parseFloat(temp).toFixed(1);
                 document.getElementById('temperatureValue').innerText = t + ' °C';
               })
-              .catch(error => console.error("Fehler beim Temperatur-Update:", error));
+              .catch(e => console.error("Temperatur-Update Fehler:", e));
           }, 15000);
         </script>
       </body>
@@ -219,27 +208,39 @@ app.get('/', async (req, res) => {
 
     res.send(html);
   } catch (error) {
-    console.error("Fehler:", error.message);
+    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
 app.get('/moisture', async (req, res) => {
   try {
-    const data = await getLatestData();
+    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Fehler bei ThingSpeak API');
+    const data = await response.json();
+
+    const lastMoisture = data.feeds[0].field1;
     res.set('Cache-Control', 'no-store');
-    res.send(data.feeds[0].field1.toString());
+    res.send(lastMoisture.toString());
   } catch (error) {
+    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
 app.get('/temperature', async (req, res) => {
   try {
-    const data = await getLatestData();
+    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Fehler bei ThingSpeak API');
+    const data = await response.json();
+
+    const lastTemp = data.feeds[0].field2;
     res.set('Cache-Control', 'no-store');
-    res.send(data.feeds[0].field2.toString());
+    res.send(lastTemp.toString());
   } catch (error) {
+    console.error("Fehler beim Abrufen der Temperatur:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
@@ -247,3 +248,4 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+

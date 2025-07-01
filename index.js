@@ -1,38 +1,58 @@
+require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
-globalThis.punycode = require('punycode');
 
 const app = express();
 const PORT = 3000;
 
-// CORS aktivieren
+// Sicherheits-Header
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
 
-// ThingSpeak-Einstellungen
-const THINGSPEAK_CHANNEL_ID = '2907360';
-const THINGSPEAK_API_KEY = '87GFHEI5QZ0CIGII';
+// .env Variablen
+const THINGSPEAK_CHANNEL_ID = process.env.THINGSPEAK_CHANNEL_ID;
+const THINGSPEAK_API_KEY = process.env.THINGSPEAK_API_KEY;
 const THINGSPEAK_PUBLIC_URL = `https://thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}`;
 
-// Bereichsanpassung: 1023 (trocken), 460 (nass)
 const SENSOR_MAX = 1023;
 const SENSOR_MIN = 460;
 
-app.get('/', async (req, res) => {
-  try {
+// Daten-Caching
+let cachedData = null;
+let lastFetchTime = 0;
+
+async function getLatestData() {
+  const now = Date.now();
+  if (!cachedData || now - lastFetchTime > 10000) {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
     const response = await fetch(url);
     const data = await response.json();
-
     if (!data || !data.feeds || data.feeds.length === 0) {
-      throw new Error("Keine Daten von ThingSpeak empfangen.");
+      throw new Error("Keine gültigen Daten empfangen.");
     }
+    cachedData = data;
+    lastFetchTime = now;
+  }
+  return cachedData;
+}
 
+// Startseite
+app.get('/', async (req, res) => {
+  try {
+    const data = await getLatestData();
     const rawMoisture = parseFloat(data.feeds[0].field1);
     const temperature = parseFloat(data.feeds[0].field2);
+
+    if (isNaN(rawMoisture) || isNaN(temperature)) {
+      throw new Error("Ungültige Sensordaten.");
+    }
+
     const moisturePercent = Math.min(100, Math.max(0, Math.round(((SENSOR_MAX - rawMoisture) / (SENSOR_MAX - SENSOR_MIN)) * 100)));
     const moistureColor = moisturePercent > 50 ? '#4CAF50' : moisturePercent > 30 ? '#FFC107' : '#F44336';
 
@@ -139,7 +159,7 @@ app.get('/', async (req, res) => {
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue" style="color:${moistureColor}">${moisturePercent}%</div>
           <div class="progress-container">
-            <div class="progress-bar"></div>
+            <div class="progress-bar" style="width:${moisturePercent}%; background:${moistureColor};"></div>
           </div>
           <div class="labels">
             <span>Trocken (0%)</span>
@@ -150,21 +170,18 @@ app.get('/', async (req, res) => {
 
         <div class="container">
           <h1>🌡️ Temperatur</h1>
-          <div class="value" id="temperatureValue">-- °C</div>
+          <div class="value" id="temperatureValue">${temperature.toFixed(1)} °C</div>
         </div>
 
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614988"></iframe>
         </div>
-        
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615027"></iframe>
         </div>
-        
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/614865"></iframe>
         </div>
-
         <div class="iframe-container">
           <iframe src="https://thingspeak.mathworks.com/apps/matlab_visualizations/615591"></iframe>
         </div>
@@ -202,37 +219,27 @@ app.get('/', async (req, res) => {
 
     res.send(html);
   } catch (error) {
-    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
+    console.error("Fehler:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
 app.get('/moisture', async (req, res) => {
   try {
-    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    const lastMoisture = data.feeds[0].field1;
+    const data = await getLatestData();
     res.set('Cache-Control', 'no-store');
-    res.send(lastMoisture.toString());
+    res.send(data.feeds[0].field1.toString());
   } catch (error) {
-    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
 
 app.get('/temperature', async (req, res) => {
   try {
-    const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    const lastTemp = data.feeds[0].field2;
+    const data = await getLatestData();
     res.set('Cache-Control', 'no-store');
-    res.send(lastTemp.toString());
+    res.send(data.feeds[0].field2.toString());
   } catch (error) {
-    console.error("Fehler beim Abrufen der Temperatur:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });

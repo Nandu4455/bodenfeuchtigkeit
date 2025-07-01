@@ -70,11 +70,11 @@ app.get('/', async (req, res) => {
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             width: 100%;
-            height: 280px; /* Gleiche Höhe für alle Boxen */
+            height: 280px;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Vertikale Zentrierung */
-            align-items: center;     /* Horizontale Zentrierung */
+            justify-content: center;
+            align-items: center;
             text-align: center;
           }
           .container:hover {
@@ -146,7 +146,7 @@ app.get('/', async (req, res) => {
               font-size: 0.9rem;
             }
             .container {
-              height: auto; /* Für kleine Bildschirme Höhe anpassen */
+              height: auto;
               padding: 20px;
             }
           }
@@ -176,7 +176,7 @@ app.get('/', async (req, res) => {
           <h1>🌱 Bodenfeuchtigkeit</h1>
           <div class="value" id="moistureValue" style="color:${moistureColor}">${moisturePercent}%</div>
           <div class="progress-container">
-            <div class="progress-bar"></div>
+            <div class="progress-bar" style="width: ${moisturePercent}%; background-color: ${moistureColor};"></div>
           </div>
           <div class="labels">
             <span>Trocken (0%)</span>
@@ -290,6 +290,7 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 
 
 

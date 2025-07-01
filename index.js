@@ -62,9 +62,9 @@ app.get('/', async (req, res) => {
           background: #fff;
           border-radius: 20px;
           box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-          width: 400px;
+          width: 550px;
           max-width: 90vw;
-          height: 280px;
+          height: 350px;
           margin: 15px 0;
           display: flex;
           flex-direction: column;
@@ -79,40 +79,40 @@ app.get('/', async (req, res) => {
         }
         h1 {
           margin-bottom: 15px;
-          font-size: 2rem;
+          font-size: 2.5rem;
           font-weight: 600;
         }
         .value {
-          font-size: 4rem;
+          font-size: 5rem;
           font-weight: 700;
           margin: 10px 0 20px;
           text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
           user-select: none;
         }
         .progress-container {
-          width: 100%;
-          height: 30px;
+          width: 90%;
+          height: 40px;
           background: #e0e0e0;
-          border-radius: 15px;
+          border-radius: 20px;
           box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
           overflow: hidden;
-          margin-bottom: 10px;
+          margin-bottom: 15px;
         }
         .progress-bar {
           height: 100%;
-          border-radius: 15px;
+          border-radius: 20px;
           width: ${moisturePercent}%;
           background-color: ${moistureColor};
           transition: width 0.5s ease, background-color 0.5s ease;
         }
         .labels {
-          width: 100%;
+          width: 90%;
           max-width: 100%;
           display: flex;
           justify-content: space-between;
           font-weight: 600;
           color: #7f8c8d;
-          margin-bottom: 10px;
+          margin-bottom: 15px;
           user-select: none;
         }
         .thingspeak-link {
@@ -120,7 +120,7 @@ app.get('/', async (req, res) => {
           color: white;
           text-decoration: none;
           border-radius: 25px;
-          padding: 10px 25px;
+          padding: 12px 30px;
           font-weight: 600;
           transition: background-color 0.3s ease, transform 0.3s ease;
           display: inline-block;
@@ -129,21 +129,24 @@ app.get('/', async (req, res) => {
           background-color: #1976D2;
           transform: scale(1.05);
         }
-        @media (max-width: 450px) {
+        @media (max-width: 600px) {
           .container {
             width: 90vw;
             height: auto;
-            padding: 20px 10px;
+            padding: 25px 10px;
           }
           .value {
-            font-size: 3rem;
+            font-size: 3.5rem;
           }
           h1 {
-            font-size: 1.6rem;
+            font-size: 2rem;
+          }
+          .progress-container {
+            height: 30px;
           }
         }
         .iframe-container {
-          width: 400px;
+          width: 550px;
           max-width: 90vw;
           height: 300px;
           margin: 15px auto;
@@ -229,7 +232,6 @@ app.get('/', async (req, res) => {
           }
         }
 
-        // Update alle 15 Sekunden
         setInterval(updateData, 15000);
       </script>
     </body>
@@ -248,13 +250,13 @@ app.get('/moisture', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error('ThingSpeak API Fehler');
+    if (!response.ok) throw new Error("ThingSpeak API Fehler");
     const data = await response.json();
     const lastMoisture = data.feeds[0].field1;
     res.set('Cache-Control', 'no-store');
     res.send(lastMoisture.toString());
   } catch (error) {
-    console.error('Fehler beim Abrufen von ThingSpeak:', error.message);
+    console.error("Fehler beim Abrufen von ThingSpeak:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
@@ -263,13 +265,13 @@ app.get('/temperature', async (req, res) => {
   try {
     const url = `https://api.thingspeak.com/channels/${THINGSPEAK_CHANNEL_ID}/feeds.json?api_key=${THINGSPEAK_API_KEY}&results=1`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error('ThingSpeak API Fehler');
+    if (!response.ok) throw new Error("ThingSpeak API Fehler");
     const data = await response.json();
     const lastTemp = data.feeds[0].field2;
     res.set('Cache-Control', 'no-store');
     res.send(lastTemp.toString());
   } catch (error) {
-    console.error('Fehler beim Abrufen der Temperatur:', error.message);
+    console.error("Fehler beim Abrufen der Temperatur:", error.message);
     res.status(500).send(`Fehler: ${error.message}`);
   }
 });
@@ -277,6 +279,7 @@ app.get('/temperature', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server läuft auf Port ${PORT}`);
 });
+
 
 
 
